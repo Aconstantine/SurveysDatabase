@@ -4,8 +4,6 @@ date: "As of `r Sys.Date()`"
 output: 
   word_document:
     reference_docx: template.docx
-  html_document:
-    css: StyleNYU_New.css
 ---
 
 # Part I: Overview

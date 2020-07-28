@@ -1,3 +1,6 @@
+##Run with python3 from command line 
+##python3 filname.csv firstname lastname
+
 import textwrap
 import pandas as pd
 import re
@@ -26,7 +29,7 @@ srvys=dict(zip(info['surveyNO'],  zip(info['surveyName'],info['monthDue'])))
 try:
     os.remove(filename+'.tex')
 except:
-    print('Fuck you')
+    print('New File Created')
 
 dirname=sys.argv[2]+sys.argv[3]
 os.mkdir(dirname)
