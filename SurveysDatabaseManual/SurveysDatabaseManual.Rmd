@@ -31,7 +31,7 @@ Once at the downloads page for sqlite3 (<https://www.sqlite.org/download.html>) 
 knitr::include_graphics("images/sqlite.png")
 ```
 
-You wont be using these tools too often and primarily, if at all, as part of the "Advanced Uses" in part IV. There will need to be some extra configuring for that but that is explained in Part IV.
+You wont be using these tools too often and primarily, if at all, as part of the "Advanced Uses" in part III. There will need to be some extra configuring for that but that is explained in Part III.
 
 #####
 
@@ -309,6 +309,135 @@ The more advanced uses of the database are:
 
 The above uses are considered "Advanced" as they require some minimal knowledge of SQL to complete or an ability to adapt previous SQL. In these cases, tasks should be completed with oversight by a handsome man in the administration.
 
+## Creating A New Survey
+
+Creating and adding a new survey (that is, a survey not listed in the surveys table), consists of three steps:
+
+1. Write up the questions in a file with extension .sql (the longest/worst part)
+2. Create a new survey entry in the surveys table
+3. Use the command line to import the new questions into the questions table
+
+### Writing survey questions
+
+The SurveyQuestions folder has a template you can use for this or you can just copy an old survey file and alter that.
+
+#### Before Writing Questions
+
+The first thing you need to do is determine the survey number or surveyID of your new survey. This should be the next number in sequence based off of the surveys table.
+
+```{r echo=FALSE, fig.cap="Surveys Table", out.width = '15%'}
+knitr::include_graphics("images/surveys.png")
+```
+
+Just use the next number (9 in the above as your new surveyID). After that you need to determine the starting questionID.
+
+The questionID is probably the most important thing to worry about because if it gets messed up many issues can arise that wont be obvious.
+
+For simplicity the questionID should be $surveyID \times 10000$. This allows each survey to have a maximum of 10,000 questions entered which should be plenty. You can of course start it somewhere else if somehow a survey had more than 10,000 questions but its helpful to have a pattern to go with.
+
+You can always find the highest questionID in the database in the last entry of the questions table, but again you want to use a questionID far away from where the last survey ended in case new questions need to be added.
+
+#### Opening Lines
+The first line in the file must be: **PRAGMA foreign_keys=ON;**
+This just makes sure table links (foreign keys) are active and turned on.
+
+#### Initial Survey Question
+The first survey question should generally have the following values entered: surveyQuestion (in quotes), questionID (a number), surveyID (a number), question (in quotes), choices (in quotes), cdsNO (in quotes). The surveyID and initial questionID are what you found above. The format is:
+
+**INSERT INTO questions (surveyQuestion, questionID, surveyID, question, choices, cdsNO) VALUES (" ", , , " "," "," ");**
+
+Technically you can leave out choices and cdsNO if the first survey question has no choices (it usually doesnt) and if there are no links to the CDS. Just make sure to remove the corresponding spaces in the VALUES vector.
+
+The other important part is the surveyQuestion field. This will be specific to the survey you are entering and can be pretty felxible but does need to be unique. So one survey might call the first question A1, or the first question might in the contacts section of their survey and be the name of the primary contact, in that case you can use something like "C1.a" or "C1.1". Just be consistent with your system.
+
+
+#### All Other Survey Question
+After the initial line is written then you no longer need to enter a questionID, the database will increase the rest of the questions based off of your initial entry. So the rest of the lines can look like:
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices, cdsNO) VALUES (" ", , " "," "," ");**
+
+Or if there are no CDS questions:
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES (" ", , " "," ");**
+
+**TIP** I find it easiest to always use the first version with both choices and cdsNO since it makes copy and pasteing easy.
+
+#####
+
+### Suggested Question Writing Method
+
+#### Self Contained Questions
+The most important thing when writing questions is to make sure they are self contained.
+
+For example, look at this question
+
+```{r echo=FALSE, fig.cap="Basic Example", out.width = '10%'}
+knitr::include_graphics("images/Qexample1.png")
+```
+
+This should be entered as 2 questions in the database:
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("25a",surveyID , "Does your institution offer rolling admission for incoming first-year students","Yes; No");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("25b",surveyID , "Does your institution offer rolling admission for incoming first-year students: Stipulations/Comments/Other","");**
+
+In this way the second question is still clear and doesnt need the first question to understand.
+
+#### Choices
+I prefer to enter choices separating each choice with a semi-colon ;. This is not important but its how I do them
+
+#### Entering Table data
+
+Table data can be annoying to enter, for example question C9 has 4 tables to fill in, the second is this
+
+```{r echo=FALSE, fig.cap="Table Example", out.width = '10%'}
+knitr::include_graphics("images/Qexample2.png")
+```
+
+I generally try and enter questions column by column so I would enter this as:
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B1",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 700-800: SAT Evidence-Based Reading and Writing","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B2",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 600-699: SAT Evidence-Based Reading and Writing","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B3",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 500-599: SAT Evidence-Based Reading and Writing","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B4",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 400-499: SAT Evidence-Based Reading and Writing","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B5",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 300-399: SAT Evidence-Based Reading and Writing","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B6",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 200-299: SAT Evidence-Based Reading and Writing","");**
+
+Then I would enter the math column, increasing the numbers (Note the B I used is because this was the second table in question C9)
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B7",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 700-800: SAT Math","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B8",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 600-699: SAT Math","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B9",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 500-599: SAT Math","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B10",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 400-499: SAT Math","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B11",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 300-399: SAT Math","");**
+
+**INSERT INTO questions (surveyQuestion, surveyID, question, choices) VALUES ("C9.B12",surveyID , "Percentage of first-time, first-year (freshman) students with scores in rangte 200-299: SAT Math","");**
+
+Finally some tables really arent tables:
+
+```{r echo=FALSE, fig.cap="Table-Like Example", out.width = '10%'}
+knitr::include_graphics("images/Qexample3.png")
+```
+
+This is really just 4 questions where your choices would be "Required; Recommended; Neither"
+
+#### Other Tips
+
+1. Certain questions will be separate in the survey but dont need to be in the database. For example, a survey will often have like 5 questions for entering an address, you can just make an address question. Same thing happens with phone numbers, there will be a question for area code, then another for phone number. You can make that one question.
+
+2. It is not necessary to end every question with a question mark. I generally dont use them at all.
+
+
+#####
 
 
 # Part IV: Some Definitions
