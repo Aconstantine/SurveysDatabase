@@ -27,7 +27,7 @@ sqlite is a self-contained simplified variety of SQL. It is used in countless ap
 
 Once at the downloads page for sqlite3 (<https://www.sqlite.org/download.html>) you go to the precompiled binaries for windows and download the "sqlite-tools" zip file.
 
-```{r echo=FALSE, fig.cap="sqlite Download Page", out.width = '25%'}
+```{r echo=FALSE, fig.cap="sqlite Download Page",out.width=800,out.height=400}
 knitr::include_graphics("images/sqlite.png")
 ```
 
@@ -366,6 +366,22 @@ Or if there are no CDS questions:
 
 ### Suggested Question Writing Method
 
+#### General Tips
+
+1. Try and use as much of the exact question wording as possible. This will help make sure the survey's intended meaning doesn't get lost, and also you dont have to spend time trying to simplify what a survey asks, plus frequently you can copy and paste the question.
+
+2. That being said, you can ignore formatting indicators in the questions or notes to the person filling it out. So if it says dont use commas or enter numbers rounded or something you can leave that out since ultimately we will be the one who officially writes the answers into the real survey and can match formatting at that point. Notes can be left out if they dont seem necessary.
+
+3. Dont use any dates or years in the questions. If the question says Fall 2019 just say "Current Fall" or something, if it says 2020-2021 you can just say something like "in the specified year". This way we dont need to make changes each year.
+
+4. Certain questions will be separated in the survey but dont need to be in the database. For example, a survey will often have like 5 questions for entering an address, you can just make an address question. Same thing happens with phone numbers, there will be a question for area code, then another for phone number. You can make that one question.
+
+5. It is not necessary to end every question with a question mark. I generally dont use them at all.
+
+6. Instructions for entering the data do not need to be included in the question.
+
+##### 
+
 #### Self Contained Questions
 The most important thing when writing questions is to make sure they are self contained.
 
@@ -430,12 +446,86 @@ knitr::include_graphics("images/Qexample3.png")
 
 This is really just 4 questions where your choices would be "Required; Recommended; Neither"
 
-#### Other Tips
+### Adding Your Questions File to the Database
 
-1. Certain questions will be separate in the survey but dont need to be in the database. For example, a survey will often have like 5 questions for entering an address, you can just make an address question. Same thing happens with phone numbers, there will be a question for area code, then another for phone number. You can make that one question.
+Once you have completed the file of questions, save it as a **.sql** file. From there you will need to use **sqlite3** directly. See the getting started information at the start of this manual for what to download.
 
-2. It is not necessary to end every question with a question mark. I generally dont use them at all.
+1) First, make a backup copy of the database file, date it and add it to the backups folder.
+2) Before you start, you must enter the new survey information into the database or it will not be added. For example we will add a test survey to the database with ID number 9. Make sure your surveyID matches what you enter in the surveys table or there will be issues.
 
+```{r echo=FALSE, fig.cap="Enter New Survey Row",out.width=800,out.height=400}
+knitr::include_graphics("images/Qadd1.png")
+```
+
+#####
+
+3) Now you want to extract the zip file you downloaded during the setup. It should contain 3 files: sqldiff, sqlite3 and sqlite3_analyzer. The only one you will really need is sqlite3. You can drag the entire folder (not the zip folder) into your documents folder (or maybe home folder if you prefer or just leave it in Downloads if you want things a mess).
+
+```{r echo=FALSE, fig.cap="File",out.width=800,out.height=400}
+knitr::include_graphics("images/Qadd2.png")
+```
+
+#####
+
+4) Next you will need to add sqlite3 to your environment variables. You can do this by typing "environment variables" into the search menu by the windows logo and opening what comes up. Or you can go to the control panel then to System and Security then to system and open advanced system settings. Both should open a screen with a menu button for Environment Variables which you then select.
+
+```{r echo=FALSE, fig.cap="Search",out.width=800,out.height=350}
+knitr::include_graphics("images/Qadd3.png")
+```
+
+```{r echo=FALSE, fig.cap="Environment Variables",out.width=400,out.height=350,fig.align='center'}
+knitr::include_graphics("images/Qadd4.png")
+```
+
+#####
+
+5) Once here select **Path** from the list and hit **Edit**. A new window will open and you select **New** to start a new line then **Browse** to find the sqlite folder where ever you moved it to. Hit **OK** and you can close everything.
+
+```{r echo=FALSE, fig.cap="Change Path Variable", out.width=600,out.height=200}
+knitr::include_graphics("images/Qadd5.png")
+```
+
+```{r echo=FALSE, fig.cap="Add New Path Location",out.width=300,out.height=400}
+knitr::include_graphics("images/Qadd6.png")
+```
+
+#####
+
+6) At this point your computer should now be able to use sqlite3 from the command line. 
+7) Now you want to go to the windows search bar and type **CMD** to open up the Command Prompt. Identify what drive the database is located in (should be the OIR drive unless you are testing out a copy on your desktop) and type **<drive letter>:** so if the drive is the I drive you would type **I:** of if its the C drive **I:**.
+
+```{r echo=FALSE, fig.cap="Command Line",out.width=800,out.height=400}
+knitr::include_graphics("images/Qadd7.png")
+```
+
+#####
+
+8) Now you need to type the path to the survey database folder. You can find this by opening the folder and clicking on the file bar at the top. 
+
+
+```{r echo=FALSE, fig.cap="File Path",out.width=800,out.height=300}
+knitr::include_graphics("images/Qadd8.png")
+```
+
+#####
+
+9) Use that address to navigate from the command prompt to that folder using the **cd** command: **cd <path>**. (Note: these next steps are the only steps you will have to repeat in future adds)  
+
+
+```{r echo=FALSE, fig.cap="Change Directory",out.width=800,out.height=300}
+knitr::include_graphics("images/Qadd9.png")
+```
+
+#####
+
+10) Finally, to add the new questions you will type the following line into the command prompt window:
+**sqlite3 SurveysDatabase.db < surveyQuestions\\<filename>.sql**
+
+```{r echo=FALSE, fig.cap="Add Questions",out.width=800,out.height=400}
+knitr::include_graphics("images/Qadd10.png")
+```
+
+11) If all went well then a new prompt line should just start. Otherwise any errors in your file will be identified and you will have to go fix these then try again. You can then open up the database in SQLiteStudio and check that the questions were added in the questions table.
 
 #####
 
